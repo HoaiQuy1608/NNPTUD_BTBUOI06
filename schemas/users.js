@@ -42,11 +42,13 @@ const userSchema = new mongoose.Schema(
             ref: "role",
             required: true
         },
-
         loginCount: {
             type: Number,
             default: 0,
             min: [0, "Login count cannot be negative"]
+        },
+        lockTime: {
+            type: Date
         },
         isDeleted: {
             type: Boolean,
@@ -58,11 +60,13 @@ const userSchema = new mongoose.Schema(
     }
 );
 userSchema.pre('save', function () {
-    let salt = bcrypt.genSaltSync(10);
-    this.password = bcrypt.hashSync(this.password, salt);
+    if (this.isModified("password")) {
+        let salt = bcrypt.genSaltSync(10);
+        this.password = bcrypt.hashSync(this.password, salt);
+    }
 });
 userSchema.pre('findOneAndUpdate', function () {
-    if (this._update.password){
+    if (this._update.password) {
         let salt = bcrypt.genSaltSync(10);
         //console.log(this._update.password);
         this._update.password = bcrypt.hashSync(this._update.password, salt);

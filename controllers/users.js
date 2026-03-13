@@ -15,5 +15,23 @@ module.exports = {
                 loginCount: logincount
             }
         )
+    },
+    FindByUsername: async function (username) {
+        return await userModel.findOne({
+            username: username,
+            isDeleted: false
+        })
+    },
+    FailLogin: async function (user) {
+        user.loginCount++;
+        if (user.loginCount == 3) {
+            user.loginCount = 0;
+            user.lockTime  = new Date(Date.now()+60*60*1000)
+        }
+        await user.save()
+    },
+    SuccessLogin: async function (user) {
+        user.loginCount = 0;
+        await user.save()
     }
 }
